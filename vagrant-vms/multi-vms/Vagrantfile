@@ -1,0 +1,49 @@
+Vagrant.configure("2") do |config|
+
+  config.vm.define "web01" do |web01|
+
+    web01.vm.box = "ubuntu/xenial64"
+
+    web01.vm.network "private_network", ip: "192.168.40.11"
+
+    web01.vm.provider "virtualbox" do |vb|
+        vb.memory = "800"
+        vb.cpus = 1 
+     end
+
+    web01.vm.provision "shell", inline: <<-SHELL
+         sudo apt update -y
+         sudo apt install -y apache2 wget unzip
+         sudo systemctl start apache2
+         sudo systemctl enable apache2
+	 cd /tmp/
+	 wget https://www.free-css.com/assets/files/free-css-templates/download/page287/eflyer.zip
+	 unzip -o eflyer.zip
+	 cp -r eflyer/* /var/www/html/
+    SHELL
+
+  end
+
+  config.vm.define "db01" do |db01|
+
+    db01.vm.box = "geerlingguy/centos7"
+
+    db01.vm.network "private_network", ip: "192.168.40.12"
+
+    db01.vm.provider "virtualbox" do |vb|
+        vb.memory = "800"
+        vb.cpus = 1
+    end
+
+    db01.vm.provision "shell", inline: <<-SHELL
+        sudo yum update -y
+        curl -sSLO https://dev.mysql.com/get/mysql80-community-release-el7-5.noarch.rpm
+        sudo rpm -ivh mysql57-community-release-el7-9.noarch.rpm 
+        sudo yum install mysql-server -y
+        sudo systemctl start mysqld
+        sudo systemctl enable mysqld
+    SHELL
+
+ end
+
+end
